@@ -4,7 +4,6 @@ import io.restassured.response.ResponseBody;
 
 import org.springframework.stereotype.Service;
 
-import java.awt.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -18,7 +17,6 @@ public class AlertService {
     private List<String> alarmList = new ArrayList<>();
     private boolean logAllTrains;
 
-    // Default constructor for Spring
     public AlertService() {
         this(true);
     }
@@ -27,13 +25,11 @@ public class AlertService {
         this.logAllTrains = logAllTrains;
     }
 
-    // Updated method signature to include alarmsEnabled
     public List<String> checkAndAlertForAvailability(ResponseBody allTrips, String minThreshold, String maxThreshold, boolean alarmsEnabled) {
         List<LinkedHashMap<String, Object>> trainAvailabilities = allTrips.jsonPath().getList("trainLegs[0].trainAvailabilities");
         return processTrainAvailabilities(trainAvailabilities, minThreshold, maxThreshold, alarmsEnabled);
     }
 
-    // Updated processTrainAvailabilities to accept alarmsEnabled and check if alarms are enabled before showing alerts
     public List<String> processTrainAvailabilities(List<LinkedHashMap<String, Object>> trainAvailabilities, String minThreshold, String maxThreshold, boolean alarmsEnabled) {
         alarmList.clear();
         System.out.println("Seats checked. Time : " + LocalDateTime.now());
@@ -84,10 +80,6 @@ public class AlertService {
                 System.out.println("https://ebilet.tcddtasimacilik.gov.tr/sefer-listesi");
                 System.out.println("//////////////////////////////////////////////");
 
-                // Show system tray message only if alarms are enabled
-                if (alarmsEnabled) {
-                    showSystemTrayMessage("Alert", "Empty Seat found. Please check logs");
-                }
             }
         }
 
@@ -113,7 +105,6 @@ public class AlertService {
                (tripTimeHour == hourOfThreshold && tripTimeMinute >= minuteOfThreshold);
     }
 
-    // New helper method to check if the trip time is before or equal to the maximum threshold
     private boolean isBeforeThresholdTime(String tripTime, String threshold) {
         String tripTimeStr = tripTime.split(" ")[4];
         int tripTimeHour = Integer.parseInt(tripTimeStr.split(":")[0]);
@@ -133,21 +124,4 @@ public class AlertService {
                (tripTimeHour == hourOfThreshold && tripTimeMinute <= minuteOfThreshold);
     }
 
-    public static void showSystemTrayMessage(String title, String message) {
-        if (SystemTray.isSupported()) {
-            try {
-                SystemTray tray = SystemTray.getSystemTray();
-                Image image = Toolkit.getDefaultToolkit().createImage("icon.png");
-                TrayIcon trayIcon = new TrayIcon(image, "Train Ticket Alert");
-                tray.add(trayIcon);
-                trayIcon.displayMessage(title, message, TrayIcon.MessageType.INFO);
-                Toolkit.getDefaultToolkit().beep();
-            } catch (Exception e) {
-                System.err.println("Error displaying notification: " + e.getMessage());
-            }
-        } else {
-            System.out.println(title + ": " + message);
-            Toolkit.getDefaultToolkit().beep();
-        }
-    }
 }

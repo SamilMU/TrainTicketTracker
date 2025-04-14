@@ -73,7 +73,7 @@ public class MainView extends VerticalLayout {
 
         H2 title = new H2("YHT Ticket Alarm");
 
-        // City Selection
+        // Station Selection
         List<Station> stations = stationService.getStations();
 
         ComboBox<Station> departureBox = new ComboBox<>("Departure Station");
@@ -83,7 +83,7 @@ public class MainView extends VerticalLayout {
         ComboBox<Station> arrivalBox = new ComboBox<>("Arrival Station");
         arrivalBox.setItemLabelGenerator(Station::getCityName);
 
-        // Place the ComboBoxes side by side
+        // Stations side by side
         HorizontalLayout stationSelectionLayout = new HorizontalLayout(departureBox, arrivalBox);
         stationSelectionLayout.setAlignItems(Alignment.CENTER);
 
@@ -99,7 +99,6 @@ public class MainView extends VerticalLayout {
             }
         });
 
-        // Replace the TextField with a DatePicker
         DatePicker datePicker = new DatePicker("Select Date");
         datePicker.setPlaceholder("DD-MM");
         datePicker.addValueChangeListener(event -> {

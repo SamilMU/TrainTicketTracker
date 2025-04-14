@@ -12,7 +12,7 @@ import static helpers.HeaderBuilder.getHeaders;
 @Service
 public class CRUDBase {
 
-    private static final String BASE_URL = "https://web-api-prod-ytp.tcddtasimacilik.gov.tr"; // Replace with your actual base URL
+    private static final String BASE_URL = "https://web-api-prod-ytp.tcddtasimacilik.gov.tr";
     private static final String SEARCH_TRIP_URL = BASE_URL + "/tms/train/train-availability?environment=dev&userId=1";
     private static final String LOAD_TRAIN_URL = BASE_URL + "/tms/seat-maps/load-by-train-id";
     private static final String SELECT_SEAT_URL = BASE_URL + "/tms/inventory/select-seat";
@@ -45,34 +45,6 @@ public Response getAllTrips(String chosenDate, Station departureStation, Station
             .post(SEARCH_TRIP_URL)
             .andReturn();
 }
-
-    public Response getAllReturnTrips(String chosenDate) {
-        chosenDate = updateDateFormat(chosenDate);
-        Headers headers = getHeaders(251);
-
-        return RestAssured.given()
-                .headers(headers)
-                .body("{\n" +
-                        "  \"searchRoutes\": [\n" +
-                        "    {\n" +
-                        "      \"departureStationId\": 98,\n" +
-                        "      \"departureStationName\": \"ANKARA GAR\",\n" +
-                        "      \"arrivalStationId\": 48,\n" +
-                        "      \"arrivalStationName\": \"İSTANBUL(PENDİK)\",\n" +
-                        "      \"departureDate\": \""+chosenDate+"-2025 21:00:00\"\n" +
-                        "    }\n" +
-                        "  ],\n" +
-                        "  \"passengerTypeCounts\": [\n" +
-                        "    {\n" +
-                        "      \"id\": 0,\n" +
-                        "      \"count\": 1\n" +
-                        "    }\n" +
-                        "  ],\n" +
-                        "  \"searchReservation\": false\n" +
-                        "}")
-                .post(SEARCH_TRIP_URL)
-                .andReturn();
-    }
 
     public Response loadTrainByTrainId(long trainId) {
         Headers headers = getHeaders(66);

@@ -11,12 +11,10 @@ package models;
             this.cityName = cityName;
         }
 
-        // Getters
         public int getId() { return id; }
         public String getName() { return name; }
         public String getCityName() { return cityName; }
 
-        // Setters (if needed)
         public void setId(int id) { this.id = id; }
         public void setName(String name) { this.name = name; }
         public void setCityName(String cityName) { this.cityName = cityName; }

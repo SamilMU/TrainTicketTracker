@@ -13,7 +13,6 @@ public class TripRequest {
         this.passengerCount = passengerCount;
     }
 
-    // Getters
     public Station getDeparture() { return departure; }
     public Station getArrival() { return arrival; }
     public String getDepartureDate() { return departureDate; }

@@ -9,7 +9,7 @@ import com.vaadin.flow.component.page.Push;
 import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"ui", "services"}) // Ensures both UI components and service classes are discovered
+@ComponentScan(basePackages = {"ui", "services"})
 @EnableVaadin
 @Push
 public class VaadinApplication implements AppShellConfigurator {
