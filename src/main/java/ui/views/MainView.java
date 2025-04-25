@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.ArrayList;
+import com.vaadin.flow.component.html.Span;
 
 @Route("")
 @JavaScript("./src/text-area-util.js")
@@ -132,6 +133,10 @@ public class MainView extends VerticalLayout {
         resultsArea.addClassName("results-area");
         resultsArea.setId("log-text-area");
 
+        // Disclaimer label below the results area
+        Span disclaimer = new Span("Disclaimer: At high values, available seat count may be incorrect by a small margin. At low numbers, this should not be a problem.");
+        disclaimer.getStyle().set("font-size", "12px").set("color", "gray").set("margin-top", "4px");
+
         Button clearLogsButton = new Button("Clear Logs");
         clearLogsButton.addClickListener(e -> {
             resultsArea.clear();
@@ -200,7 +205,8 @@ public class MainView extends VerticalLayout {
                 stopButton,
                 clearLogsButton,
                 linkButton,
-                resultsArea
+                resultsArea,
+                disclaimer // add disclaimer just below resultsArea
         );
     }
 
@@ -224,15 +230,23 @@ public class MainView extends VerticalLayout {
                     return;
                 }
 
-                List<String> alerts = alertService.checkAndAlertForAvailability(response.getBody(), minTime, maxTime, alarmsEnabled.get());
+                List<String> logs = alertService.checkAndAlertForAvailability(response.getBody(), minTime, maxTime, alarmsEnabled.get());
 
-                if (!alerts.isEmpty()) {
-                    getUI().ifPresent(ui -> ui.access(() -> {
-                        Notification.show("Empty seats found! Check results.", 5000, Notification.Position.TOP_CENTER);
-                    }));
+                if (!logs.isEmpty()) {
+                    boolean hasAlerts = false;
+                    for (String log : logs) {
+                        if (log.startsWith("ALERT:")) {
+                            hasAlerts = true;
+                            logToUI(log, true);
+                        } else if (log.startsWith("INFO:") && logAllTrains) {
+                            logToUI(log, false);
+                        }
+                    }
 
-                    for (String alert : alerts) {
-                        logToUI("ALERT: Empty seat found - " + alert, true);
+                    if (hasAlerts) {
+                        getUI().ifPresent(ui -> ui.access(() -> {
+                            Notification.show("Empty seats found! Check results.", 5000, Notification.Position.TOP_CENTER);
+                        }));
                     }
                 } else if (logAllTrains) {
                     logToUI("No available seats found at this time");

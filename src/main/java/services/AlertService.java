@@ -66,17 +66,13 @@ public class AlertService {
 
             String tripTimeInEpoch = segmentList.get(0).get("departureTime").toString();
             String tripTime = convertEpochToDateTime(Long.parseLong(tripTimeInEpoch));
-
-            // Log all trains, even those that do not meet the criteria
-            if (availableSeats >= 1 && logAllTrains) {
-                System.out.println("Available seats (Time unspecific)");
-                System.out.println("Train info : " + tripTime);
-                System.out.println("Count : " + availableSeats);
-            }
+            boolean alreadyAlerted = false;
 
             // Only fire an alert if the trip time is after the minimum and before (or equal to) the maximum threshold
             if (isAfterThresholdTime(tripTime, minThreshold) && isBeforeThresholdTime(tripTime, maxThreshold) && availableSeats >= 1) {
-                alarmList.add(tripTime);
+                // Add to alarmList with ALERT prefix for UI display
+                alarmList.add("ALERT: " + tripTime + " Av. Seats :  " + availableSeats );
+
                 System.out.println("//////////////////////////////////////////////");
                 System.out.println("Desired Seat Found");
                 System.out.println("Train info : " + tripTime);
@@ -84,7 +80,19 @@ public class AlertService {
                 System.out.println("https://ebilet.tcddtasimacilik.gov.tr/sefer-listesi");
                 System.out.println("//////////////////////////////////////////////");
 
+                alreadyAlerted = true;
             }
+
+            // Log all trains, even those that do not meet the criteria
+            if (availableSeats >= 1 && logAllTrains && !alreadyAlerted) {
+                System.out.println("Available seats (Time unspecific)");
+                System.out.println("Train info : " + tripTime);
+                System.out.println("Count : " + availableSeats);
+
+                // Add to alarmList with INFO prefix for UI display
+                alarmList.add("INFO: Time : " + tripTime + " Av. Seats : " + availableSeats);
+            }
+
         }
 
         return alarmList;
