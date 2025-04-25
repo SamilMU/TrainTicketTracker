@@ -47,6 +47,10 @@ public class AlertService {
             for (LinkedHashMap<String, Object> vagon : vagonList) {
                 List<LinkedHashMap<String, Object>> availabilityList = (List<LinkedHashMap<String, Object>>) vagon.get("availabilities");
 
+                if (availabilityList.isEmpty()) {
+                    continue;
+                }
+
                 if(Objects.isNull(availabilityList.get(0).get("cabinClass"))){
                     continue;
                 }
