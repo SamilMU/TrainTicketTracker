@@ -95,7 +95,7 @@ public class AlertService {
         int tripTimeHour = Integer.parseInt(tripTimeStr.split(":")[0]);
         int tripTimeMinute = Integer.parseInt(tripTimeStr.split(":")[1]);
 
-        int hourOfThreshold = 0;
+        int hourOfThreshold ;
         int minuteOfThreshold = 0;
 
         if (threshold.contains(":")) {
@@ -114,7 +114,7 @@ public class AlertService {
         int tripTimeHour = Integer.parseInt(tripTimeStr.split(":")[0]);
         int tripTimeMinute = Integer.parseInt(tripTimeStr.split(":")[1]);
 
-        int hourOfThreshold = 0;
+        int hourOfThreshold ;
         int minuteOfThreshold = 0;
 
         if (threshold.contains(":")) {
