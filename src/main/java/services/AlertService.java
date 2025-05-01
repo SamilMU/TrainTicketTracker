@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static helpers.EpochTimeConverter.convertEpochToDateTime;
 
@@ -16,6 +18,8 @@ import static helpers.EpochTimeConverter.convertEpochToDateTime;
 public class AlertService {
     private List<String> alarmList = new ArrayList<>();
     private boolean logAllTrains;
+    private final Logger logger = Logger.getLogger(this.getClass().getName());
+
 
     public AlertService() {
         this(true);
@@ -32,7 +36,7 @@ public class AlertService {
 
     public List<String> processTrainAvailabilities(List<LinkedHashMap<String, Object>> trainAvailabilities, String minThreshold, String maxThreshold, boolean alarmsEnabled) {
         alarmList.clear();
-        System.out.println("Seats checked. Time : " + LocalDateTime.now());
+        logger.log(Level.INFO, "Seats checked. Time : " + LocalDateTime.now());
 
         for (LinkedHashMap<String, Object> trips : trainAvailabilities) {
             int availableSeats = 0;
@@ -73,12 +77,10 @@ public class AlertService {
                 // Add to alarmList with ALERT prefix for UI display
                 alarmList.add("ALERT: " + tripTime + " Av. Seats :  " + availableSeats );
 
-                System.out.println("//////////////////////////////////////////////");
-                System.out.println("Desired Seat Found");
-                System.out.println("Train info : " + tripTime);
-                System.out.println("Count : " + availableSeats);
-                System.out.println("https://ebilet.tcddtasimacilik.gov.tr/sefer-listesi");
-                System.out.println("//////////////////////////////////////////////");
+                logger.log(Level.INFO, "Desired Seat Found");
+                logger.log(Level.INFO, "Train info : " + tripTime);
+                logger.log(Level.INFO, "Count : " + availableSeats);
+                logger.log(Level.INFO, "https://ebilet.tcddtasimacilik.gov.tr/sefer-listesi");
 
                 alreadyAlerted = true;
             }

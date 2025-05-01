@@ -65,6 +65,24 @@
                     <mainClass>ui.VaadinApplication</mainClass>
                 </configuration>
             </plugin>
+
+
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <version>24.3.7</version>
+                <configuration>
+                    <frontendDirectory>${project.basedir}/frontend</frontendDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                            <goal>build-frontend</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
