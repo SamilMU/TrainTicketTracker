@@ -22,7 +22,12 @@ YHT Ticket Alarm is a personal tool for checking train ticket availability and a
 
 This tool was created to meet a personal need for monitoring YHT train ticket availability. It is not a commercial project, but a practical solution for a real-world problem.
 
-## Future Plans
+## Disclaimer
+
+There is bearer-token inside the application.properties file. You may change with yours or use it as is. 
+Didn't want to sink more time into implementing a proper authentication storing mechanism. Your choice.
+
+## Might be's
 
 - Integrate WebDriver to automatically open the YHT trips page with available seats
 - Direct users to seat selection and payment pages for faster booking
