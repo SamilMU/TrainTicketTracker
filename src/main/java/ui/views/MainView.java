@@ -1,5 +1,7 @@
 package ui.views;
 
+import com.vaadin.flow.component.dependency.Uses;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -37,6 +39,7 @@ import com.vaadin.flow.component.html.Span;
 @Route("")
 @JavaScript("./src/text-area-util.js")
 @CssImport("./styles/styles.css")
+@Uses(Dialog.class)
 public class MainView extends VerticalLayout {
     private final TextArea resultsArea = new TextArea("Results");
     private final AtomicBoolean monitoring = new AtomicBoolean(false);
@@ -48,7 +51,6 @@ public class MainView extends VerticalLayout {
     private final StationService stationService = new StationService();
     private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     private final List<String> logLines = new ArrayList<>();
-    private Button linkButton;
     private final TextField maxTimeField = new TextField("Maximum departure time");
     private final AtomicBoolean alarmsEnabled = new AtomicBoolean(true);
 
@@ -84,9 +86,15 @@ public class MainView extends VerticalLayout {
         ComboBox<Station> arrivalBox = new ComboBox<>("Arrival Station");
         arrivalBox.setItemLabelGenerator(Station::getCityName);
 
-        // Stations side by side
-        HorizontalLayout stationSelectionLayout = new HorizontalLayout(departureBox, arrivalBox);
-        stationSelectionLayout.setAlignItems(Alignment.CENTER);
+        // Custom Station Button
+        Button addCustomStationBtn = createCustomStationDialog(departureBox, arrivalBox);
+
+        // Create a layout for the stations and custom station button
+        HorizontalLayout stationLayout = new HorizontalLayout(departureBox, arrivalBox);
+        stationLayout.setAlignItems(Alignment.BASELINE);
+
+        HorizontalLayout stationControlLayout = new HorizontalLayout(stationLayout, addCustomStationBtn);
+        stationControlLayout.setAlignItems(Alignment.BASELINE);
 
         departureBox.addValueChangeListener(event -> {
             Station selectedDeparture = event.getValue();
@@ -145,11 +153,9 @@ public class MainView extends VerticalLayout {
             logToUI("Logs cleared at " + LocalDateTime.now().format(timeFormatter));
         });
 
-        linkButton = new Button("Open TCDD Ticket Page", event -> {
-            getUI().ifPresent(ui ->
+        Button linkButton = new Button("Open TCDD Ticket Page", event -> getUI().ifPresent(ui ->
                 ui.getPage().open("https://ebilet.tcddtasimacilik.gov.tr/sefer-listesi", "_blank")
-            );
-        });
+        ));
         linkButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
         startButton.addClickListener(e -> {
@@ -163,12 +169,6 @@ public class MainView extends VerticalLayout {
 
                 if (departure == null || arrival == null) {
                     Notification.show("Please select both departure and arrival cities.", 3000, Notification.Position.MIDDLE);
-                    monitoring.set(false);
-                    return;
-                }
-
-                if (date == null) {
-                    Notification.show("Please select a valid date.", 3000, Notification.Position.MIDDLE);
                     monitoring.set(false);
                     return;
                 }
@@ -195,7 +195,7 @@ public class MainView extends VerticalLayout {
 
         add(
                 title,
-                stationSelectionLayout,
+                stationControlLayout,
                 datePicker,
                 timeField,
                 maxTimeField,
@@ -244,9 +244,7 @@ public class MainView extends VerticalLayout {
                     }
 
                     if (hasAlerts) {
-                        getUI().ifPresent(ui -> ui.access(() -> {
-                            Notification.show("Empty seats found! Check results.", 5000, Notification.Position.TOP_CENTER);
-                        }));
+                        getUI().ifPresent(ui -> ui.access(() -> Notification.show("Empty seats found! Check results.", 5000, Notification.Position.TOP_CENTER)));
                     }
                 } else if (logAllTrains) {
                     logToUI("No available seats found at this time");
@@ -295,4 +293,78 @@ public class MainView extends VerticalLayout {
             ui.push();
         }));
     }
+
+
+
+    // Custom Stations
+    private Button createCustomStationDialog(ComboBox<Station> departureBox, ComboBox<Station> arrivalBox) {
+        Button addCustomStationBtn = new Button("Add Custom Station");
+        addCustomStationBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+        addCustomStationBtn.addClickListener(e -> {
+            Dialog dialog = new Dialog();
+            dialog.setHeaderTitle("Add Custom Station");
+
+            TextField stationIdField = new TextField("Station ID");
+            stationIdField.setHelperText("Enter numeric station ID");
+
+            TextField stationNameField = new TextField("Station Name");
+            stationNameField.setHelperText("Official station name (e.g., KONYA YHT)");
+
+            TextField cityNameField = new TextField("City Name");
+            cityNameField.setHelperText("Display name (e.g., Konya)");
+
+            VerticalLayout dialogLayout = new VerticalLayout(
+                    stationIdField, stationNameField, cityNameField);
+            dialogLayout.setPadding(true);
+            dialogLayout.setSpacing(true);
+
+            dialog.add(dialogLayout);
+
+            Button saveButton = new Button("Save", event -> {
+                try {
+                    int stationId = Integer.parseInt(stationIdField.getValue().trim());
+                    String stationName = stationNameField.getValue().trim();
+                    String cityName = cityNameField.getValue().trim();
+
+                    if (stationName.isEmpty() || cityName.isEmpty()) {
+                        Notification.show("All fields are required", 3000, Notification.Position.MIDDLE);
+                        return;
+                    }
+
+                    Station newStation = new Station(stationId, stationName, cityName);
+                    stationService.addStation(newStation);
+
+                    // Update ComboBoxes with new station
+                    List<Station> updatedStations = stationService.getStations();
+                    Station selectedDeparture = departureBox.getValue();
+                    departureBox.setItems(updatedStations);
+
+                    if (selectedDeparture != null) {
+                        arrivalBox.setItems(updatedStations.stream()
+                                .filter(station -> !station.equals(selectedDeparture))
+                                .toList());
+                    } else {
+                        arrivalBox.setItems(updatedStations);
+                    }
+
+                    dialog.close();
+                    logToUI("Custom station added: " + cityName);
+
+                } catch (NumberFormatException ex) {
+                    Notification.show("Please enter a valid numeric ID", 3000, Notification.Position.MIDDLE);
+                }
+            });
+
+            Button cancelButton = new Button("Cancel", event -> dialog.close());
+            cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+
+            dialog.getFooter().add(cancelButton, saveButton);
+            dialog.open();
+        });
+
+        return addCustomStationBtn;
+    }
+
+
 }
